@@ -1,0 +1,21 @@
+# Forzar LF en todos los archivos de código
+*.py text eol=lf
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Archivos de entorno (no versionados normalmente, pero por si acaso)
+*.env text eol=lf
+
+# Mantener binarios sin modificaciones
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+
+# Configs de IDE
+*.bat text eol=crlf
+*.cmd text eol=crlf

@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Entorno virtual
+env/
+venv/
+
+# Variables de entorno
+.env
+
+# Logs
+*.log
+
+# Base de datos local
+*.db
+
+# Docker volúmenes (si llegara a crearse como carpeta)
+postgres_data/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp

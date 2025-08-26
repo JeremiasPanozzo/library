@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  web:
+    build: .
+    container_name: flask_app
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DATABASE_URL=postgresql+psycopg2://flaskuser:Qz2pjeIvWLpistRrKirrsQ@192.168.123.33:5432/library
+      - FLASK_SECRET_KEY=YtIrjUeP6vOgtO1HsjcRfA
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+
+  db:
+    image: postgres:15
+    container_name: flask_db
+    restart: always
+    environment:
+      - POSTGRES_USER=flask_user
+      - POSTGRES_PASSWORD=Qz2pjeIvWLpistRrKirrsQ
+      - POSTGRES_DB=flask_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
