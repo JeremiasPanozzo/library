@@ -15,8 +15,8 @@ def create_app():
     with app.app_context():
         db.create_all()
         
-    # print(f"Current Environment: {app.config.get('SECRET_KEY')}")
-    # print(f"Using Database: {app.config.get('DATABASE')}")
+    print(f"Current Key: {app.config.get('SECRET_KEY')}")
+    print(f"Using Database: {app.config.get('SQLALCHEMY_DATABASE_URI')}")
     
     app.register_blueprint(routes.bp)
 

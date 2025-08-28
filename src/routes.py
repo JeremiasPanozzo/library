@@ -7,7 +7,8 @@ bp = Blueprint('main', __name__)
 @bp.route("/", methods=["GET"])
 def index():
     user_agent = request.headers.get("User-Agent")
-    return jsonify({"message": "Hello, World!", "user_agent": user_agent})
+    welcome = "Welcome to this API!"
+    return jsonify({"message": "Hello, World!", "welcome": welcome})
 
 @bp.route('/authors', methods=['GET'])
 def get_authors():
@@ -16,8 +17,9 @@ def get_authors():
         authors_data = []
         for author in authors:
             author_data = {
-                'id': author.id,
                 'name': author.name,
+                'last_name': author.last_name,
+                'id': author.id,
                 'age': author.age,
                 'books': []
             }
@@ -26,8 +28,8 @@ def get_authors():
                     'id': book.id,
                     'isbn': book.isbn,
                     'name': book.name,
-                    'cant_pages': book.cant_pages,
-                    'createdAt': book.created_at.isoformat() if book.created_at else None
+                    'page_count': book.page_count,
+                    'created_at': book.created_at.isoformat() if book.created_at else None
                 }
                 author_data['books'].append(book_data)
             authors_data.append(author_data)
@@ -40,11 +42,23 @@ def get_authors():
 def add_author():
     try:
         data = request.json
+        
+        if data is None:
+            return jsonify({'message': 'Bad request, no data provided'}), 400
+        
         name = data.get('name')
+        last_name = data.get('last_name')
         age = data.get('age')
-        if not name or not age:
+
+        if not name or not age or not last_name:
             return jsonify({'message': 'Bad request, name or age not found'}), 400
-        new_author = Author(name=name, age=age)
+        
+        try:
+            age = int(age)
+        except ValueError:
+            return jsonify({'message': 'Invalid age format'}), 400
+
+        new_author = Author(name=name, last_name=last_name, age=age)
         db.session.add(new_author)
         db.session.commit()
         return jsonify({'author': {'id': new_author.id, 'name': new_author.name, 'age': new_author.age}}), 201
@@ -62,8 +76,8 @@ def get_books():
                 'id': book.id,
                 'isbn': book.isbn,
                 'name': book.name,
-                'cant_pages': book.cant_pages,
-                'createdAt': book.created_at.isoformat() if book.created_at else None
+                'page_count': book.page_count,
+                'created_at': book.created_at.isoformat() if book.created_at else None
             }
             books_data.append(book_data)
         return jsonify({'books': books_data})
@@ -75,16 +89,22 @@ def get_books():
 def add_book():
     try:
         data = request.json
+
+        if data is None:
+            return jsonify({'message': 'Bad request, no data provided'}), 400
+        
         isbn = data.get('isbn')
         name = data.get('name')
-        cant_pages = data.get('cant_pages')
+        page_count = data.get('page_count')
         author_id = data.get('author_id')
-        if not name or not cant_pages or not author_id or not isbn:
-            return jsonify({'message': 'Bad request, isbn or name or cantPages or author not found'}), 400
-        new_book = Book(isbn=isbn, name=name, cant_pages=cant_pages, author_id=author_id)
+
+        if not name or not page_count or not author_id or not isbn:
+            return jsonify({'message': 'Bad request, isbn or name or page_count or author not found'}), 400
+
+        new_book = Book(isbn=isbn, name=name, page_count=page_count, author_id=author_id)
         db.session.add(new_book)
         db.session.commit()
-        return jsonify({'book': {'id': new_book.id, 'isbn': new_book.isbn, 'name': new_book.name, 'cant_pages': new_book.cant_pages}}), 201
+        return jsonify({'book': {'id': new_book.id, 'isbn': new_book.isbn, 'name': new_book.name, 'page_count': new_book.page_count}}), 201
     except Exception as error:
         print('Error', error)
         return jsonify({'message': 'Internal server error'}), 500
