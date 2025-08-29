@@ -7,7 +7,6 @@ bp = Blueprint('main', __name__)
 
 @bp.route("/", methods=["GET"])
 def index():
-    user_agent = request.headers.get("User-Agent")
     welcome = "Welcome to this API!"
     return jsonify({"message": "Hello, World!", "welcome": welcome})
 
@@ -110,4 +109,74 @@ def add_book():
         return jsonify({'book': {'id': new_book.id, 'isbn': new_book.isbn, 'name': new_book.name, 'page_count': new_book.page_count}}), 201
     except Exception as error:
         print('Error', error)
+        return jsonify({'message': 'Internal server error'}), 500
+    
+@bp.route('/books/<int:book_id>', methods=['GET'])
+def get_book(book_id):
+    try:
+        book = Book.query.filter_by(id=book_id).first()
+
+        if book is None:
+            return jsonify({'message': 'Book not found'}), 404
+
+        book_data = {
+            'id': book.id,
+            'isbn': book.isbn,
+            'name': book.name,
+            'page_count': book.page_count,
+            'created_at': book.created_at.isoformat() if book.created_at else None
+        }
+        return jsonify({'book': book_data})
+    except Exception as error:
+        return jsonify({'message': 'Internal server error'}), 500
+    
+@bp.route('/books/<int:book_id>', methods=['DELETE'])
+@jwt_required()
+def delete_book(book_id):
+    try:
+        book = Book.query.filter_by(id=book_id).first()
+        if book is None:
+            return jsonify({'message': 'Book not found'}), 404
+
+        db.session.delete(book)
+        db.session.commit()
+        return jsonify({'message': 'Book deleted successfully'}), 204
+    except Exception as error:
+        return jsonify({'message': 'Internal server error'}), 500
+    
+@bp.route('/authors/<int:author_id>', methods=['GET'])
+def get_author(author_id):
+    try:
+        author = Author.query.filter_by(id=author_id).first()
+
+        if author is None:
+            return jsonify({'message':'Author not found'}), 404
+        
+        author_data = {
+            'id': author.id,
+            'name':author.name,
+            'last_name': author.last_name,
+            'age': author.age,
+            'is_dead': author.is_dead,
+            'created_at': author.created_at.isoformat() if author.created_at else None
+        }
+
+        return jsonify({'author': author_data})
+    except Exception as error:
+        return jsonify({'message': 'Internal server error'}), 500
+    
+@bp.route('/authors/<int:author_id>', methods=['DELETE'])
+@jwt_required()
+def delete_author(author_id):
+    try:
+        author = Author.query.filter_by(id=author_id).first()
+
+        if author is None:
+            return jsonify({'message': 'Author not found'}), 404
+        
+        db.session.delete(author)
+        db.session.commit()
+
+        return jsonify({'message': 'Author deleted successfully'}), 204
+    except Exception as error:
         return jsonify({'message': 'Internal server error'}), 500
