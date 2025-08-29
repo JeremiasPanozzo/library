@@ -1,7 +1,8 @@
 from flask import Flask
-from . import routes
 from dotenv import load_dotenv
 from .models import db
+from flask_jwt_extended import JWTManager
+from flask_bcrypt import Bcrypt
 
 def create_app():
 
@@ -17,7 +18,15 @@ def create_app():
         
     print(f"Current Key: {app.config.get('SECRET_KEY')}")
     print(f"Using Database: {app.config.get('SQLALCHEMY_DATABASE_URI')}")
+    print(f"Secret: {app.config.get('JWT_SECRET_KEY')}")
+    
+    from . import routes
+    from . import auth
     
     app.register_blueprint(routes.bp)
+    app.register_blueprint(auth.bp)
 
+    jwt = JWTManager(app)
+    bcrypt = Bcrypt(app)
+    
     return app
