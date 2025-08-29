@@ -1,6 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
+from flask_bcrypt import Bcrypt
 
+bcrypt = Bcrypt()
 db = SQLAlchemy()
 
 class Author(db.Model):
@@ -32,3 +34,15 @@ class Book(db.Model):
         self.name = name
         self.page_count = page_count
         self.author_id = author_id
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(128), nullable=False)
+
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
+
+    def check_password(self, password):
+        return bcrypt.check_password_hash(self.password, password)
