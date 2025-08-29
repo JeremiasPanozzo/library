@@ -1,8 +1,8 @@
 from flask import Flask
 from dotenv import load_dotenv
-from .models import db
+from .models import db, bcrypt
 from flask_jwt_extended import JWTManager
-from flask_bcrypt import Bcrypt
+from .auth import jwt
 
 def create_app():
 
@@ -12,7 +12,10 @@ def create_app():
     app.config.from_prefixed_env()
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=False
     
+    jwt.init_app(app)
+    bcrypt.init_app(app)
     db.init_app(app)
+    
     with app.app_context():
         db.create_all()
         
@@ -22,11 +25,8 @@ def create_app():
     
     from . import routes
     from . import auth
-    
+
     app.register_blueprint(routes.bp)
     app.register_blueprint(auth.bp)
-
-    jwt = JWTManager(app)
-    bcrypt = Bcrypt(app)
     
     return app

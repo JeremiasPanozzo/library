@@ -1,11 +1,11 @@
 from flask import Flask, Blueprint, request, jsonify
-from flask_jwt_extended import create_access_token
-from flask_bcrypt import Bcrypt
-from .models import User
-from .models import db
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt
+from .models import RevokedToken, User
+from .models import db, bcrypt
 
 bp = Blueprint('auth',__name__)
-bcrypt = Bcrypt()
+
+jwt = JWTManager()
 
 @bp.route('/login', methods=['POST'])
 def login():
@@ -28,9 +28,17 @@ def login():
     return jsonify(access_token=access_token)
 
 @bp.route('/logout', methods=['POST'])
+@jwt_required()
 def logout():
-    data = request.get_json()
-    return ""
+    jti = get_jwt()["jti"]
+    try:
+        revoked_token = RevokedToken(jti)
+        db.session.add(revoked_token)
+        db.session.commit()
+        return jsonify({"message": "Successfully logged out"}), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Failed to log out'}), 500
 
 @bp.route('/register', methods=['POST'])
 def register():
@@ -60,3 +68,8 @@ def register():
         return jsonify({"error": "User registration failed."}), 500
 
     return jsonify({"message": "User registered successfully"}), 201
+
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload):
+    jti = jwt_payload["jti"]
+    return RevokedToken.query.filter_by(jti=jti).first() is not None
