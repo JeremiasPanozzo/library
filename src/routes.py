@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from .models import Author, Book
 from .models import db
+from flask_jwt_extended import jwt_required
 
 bp = Blueprint('main', __name__)
 
@@ -39,6 +40,7 @@ def get_authors():
         return jsonify({'message': 'Internal server error'}), 500
     
 @bp.route('/authors', methods=['POST'])
+@jwt_required()
 def add_author():
     try:
         data = request.json
@@ -86,6 +88,7 @@ def get_books():
         return jsonify({'message': 'Internal server error'}), 500
 
 @bp.route('/books', methods=['POST'])
+@jwt_required()
 def add_book():
     try:
         data = request.json
